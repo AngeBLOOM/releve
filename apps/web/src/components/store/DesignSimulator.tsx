@@ -99,18 +99,18 @@ export default function DesignSimulator() {
 
   // Área de estampado (en %) según prenda
   const printArea = garment === 'SHIRT'
-    ? { left: 36, top: 34, width: 28, height: 34 }
+    ? { left: 37, top: 35, width: 26, height: 32 }
     : { left: 30, top: 28, width: 40, height: 40 };
 
   const isLight = isLightHex(color);
   // Silueta de franela limpia y simétrica (viewBox 300x300, eje x=150)
-  const shirtOutline = 'M108 84 L62 100 Q52 106 48 128 L82 140 Q92 120 100 112 L96 200 L92 252 Q150 262 208 252 L204 200 L200 112 Q208 120 218 140 L252 128 Q248 106 238 100 L192 84 C178 102 122 102 108 84 Z';
-  const shirtBody = 'M108 84 L100 112 L96 200 L92 252 Q150 262 208 252 L204 200 L200 112 L192 84 C178 102 122 102 108 84 Z';
-  const lSleeve = 'M108 84 L62 100 Q52 106 48 128 L82 140 Q92 120 100 112 Z';
-  const rSleeve = 'M192 84 L238 100 Q248 106 252 128 L218 140 Q208 120 200 112 Z';
-  const lCuff = 'M48 128 L82 140';
-  const rCuff = 'M252 128 L218 140';
-  const collarPath = 'M110 86 C123 103 177 103 190 86';
+  const shirtOutline = 'M128 80 L100 84 L60 102 Q56 122 72 140 Q86 134 96 126 L92 240 Q150 250 208 240 L204 126 Q214 134 228 140 Q244 122 240 102 L200 84 L172 80 Q150 96 128 80 Z';
+  const shirtBody = 'M128 80 L100 84 L96 126 L92 240 Q150 250 208 240 L204 126 L200 84 L172 80 Q150 96 128 80 Z';
+  const lSleeve = 'M100 84 L60 102 Q56 122 72 140 Q86 134 96 126 Z';
+  const rSleeve = 'M200 84 L240 102 Q244 122 228 140 Q214 134 204 126 Z';
+  const lCuff = 'M60 102 Q56 122 72 140';
+  const rCuff = 'M240 102 Q244 122 228 140';
+  const collarPath = 'M128 82 Q150 98 172 82';
 
   return (
     <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
@@ -121,27 +121,27 @@ export default function DesignSimulator() {
           <svg viewBox="0 0 300 300" className="absolute inset-0 w-full h-full">
             <defs>
               <clipPath id="shirtClip"><path d={shirtBody} /></clipPath>
-              <radialGradient id="bodyVol" cx="50%" cy="30%" r="66%">
-                <stop offset="0%" stopColor={shade(color, isLight ? 10 : 30)} />
-                <stop offset="52%" stopColor={color} />
-                <stop offset="100%" stopColor={shade(color, -24)} />
+              <radialGradient id="bodyVol" cx="50%" cy="30%" r="72%">
+                <stop offset="0%" stopColor={shade(color, isLight ? 6 : 24)} />
+                <stop offset="58%" stopColor={color} />
+                <stop offset="100%" stopColor={shade(color, -16)} />
               </radialGradient>
               <linearGradient id="sideL" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="rgba(0,0,0,0.34)" />
-                <stop offset="32%" stopColor="rgba(0,0,0,0)" />
+                <stop offset="0%" stopColor="rgba(0,0,0,0.16)" />
+                <stop offset="30%" stopColor="rgba(0,0,0,0)" />
               </linearGradient>
               <linearGradient id="sideR" x1="1" y1="0" x2="0" y2="0">
-                <stop offset="0%" stopColor="rgba(0,0,0,0.34)" />
-                <stop offset="32%" stopColor="rgba(0,0,0,0)" />
+                <stop offset="0%" stopColor="rgba(0,0,0,0.16)" />
+                <stop offset="30%" stopColor="rgba(0,0,0,0)" />
               </linearGradient>
-              <radialGradient id="chestHi" cx="50%" cy="42%" r="44%">
-                <stop offset="0%" stopColor="rgba(255,255,255,0.30)" />
+              <radialGradient id="chestHi" cx="50%" cy="40%" r="42%">
+                <stop offset="0%" stopColor={`rgba(255,255,255,${isLight ? 0.4 : 0.16})`} />
                 <stop offset="100%" stopColor="rgba(255,255,255,0)" />
               </radialGradient>
-              <radialGradient id="sleeveVol" cx="42%" cy="34%" r="78%">
-                <stop offset="0%" stopColor={shade(sleeveColor, isLightHex(sleeveColor) ? 10 : 26)} />
-                <stop offset="58%" stopColor={sleeveColor} />
-                <stop offset="100%" stopColor={shade(sleeveColor, -22)} />
+              <radialGradient id="sleeveVol" cx="45%" cy="30%" r="85%">
+                <stop offset="0%" stopColor={shade(sleeveColor, isLightHex(sleeveColor) ? 6 : 22)} />
+                <stop offset="60%" stopColor={sleeveColor} />
+                <stop offset="100%" stopColor={shade(sleeveColor, -18)} />
               </radialGradient>
               <linearGradient id="mugVol" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stopColor={shade(color, -22)} />
@@ -149,19 +149,24 @@ export default function DesignSimulator() {
                 <stop offset="55%" stopColor={color} />
                 <stop offset="100%" stopColor={shade(color, -26)} />
               </linearGradient>
-              <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3.5" /></filter>
+              <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3" /></filter>
               <filter id="drop" x="-30%" y="-30%" width="160%" height="160%">
-                <feDropShadow dx="0" dy="7" stdDeviation="7" floodColor="#000" floodOpacity="0.22" />
+                <feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="#000" floodOpacity="0.20" />
               </filter>
+              <clipPath id="lsClip"><path d={lSleeve} /></clipPath>
+              <clipPath id="rsClip"><path d={rSleeve} /></clipPath>
             </defs>
 
             {garment === 'SHIRT' ? (
               <g>
                 {/* base + sombra proyectada de toda la silueta */}
                 <path d={shirtOutline} fill={color} filter="url(#drop)" />
-                {/* MANGAS (color propio) */}
+                {/* MANGAS (color propio) con volumen */}
                 <path d={lSleeve} fill="url(#sleeveVol)" />
                 <path d={rSleeve} fill="url(#sleeveVol)" />
+                {/* sombra del pliegue del hombro sobre la manga */}
+                <g clipPath="url(#lsClip)"><path d="M96 122 Q80 128 66 140" fill="none" stroke="rgba(0,0,0,0.10)" strokeWidth="6" filter="url(#soft)" /></g>
+                <g clipPath="url(#rsClip)"><path d="M204 122 Q220 128 234 140" fill="none" stroke="rgba(0,0,0,0.10)" strokeWidth="6" filter="url(#soft)" /></g>
                 {/* CUERPO con volumen suave */}
                 <path d={shirtBody} fill="url(#bodyVol)" />
                 <g clipPath="url(#shirtClip)">
@@ -170,25 +175,26 @@ export default function DesignSimulator() {
                   <rect x="0" y="0" width="300" height="300" fill="url(#sideR)" />
                   {/* luz de pecho */}
                   <rect x="0" y="0" width="300" height="300" fill="url(#chestHi)" />
-                  {/* sombra suave bajo el cuello */}
-                  <path d="M112 96 Q150 108 188 96" fill="none" stroke="rgba(0,0,0,0.10)" strokeWidth="10" filter="url(#soft)" />
+                  {/* pliegues suaves verticales */}
+                  <path d="M104 90 Q100 130 100 240" fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" filter="url(#soft)" />
+                  <path d="M196 90 Q200 130 200 240" fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" filter="url(#soft)" />
                   {/* sombra sutil del dobladillo */}
-                  <path d="M96 246 Q150 258 204 246" fill="none" stroke="rgba(0,0,0,0.10)" strokeWidth="9" filter="url(#soft)" />
+                  <path d="M96 234 Q150 244 204 234" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="7" filter="url(#soft)" />
                 </g>
-                {/* sisa (costura manga-cuerpo) sutil */}
-                <path d="M100 112 Q94 120 82 140" fill="none" stroke="rgba(0,0,0,0.10)" strokeWidth="2" strokeLinecap="round" />
-                <path d="M200 112 Q208 120 218 140" fill="none" stroke="rgba(0,0,0,0.10)" strokeWidth="2" strokeLinecap="round" />
+                {/* costura del hombro sutil */}
+                <path d="M100 84 Q120 92 128 80" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="1.5" />
+                <path d="M200 84 Q180 92 172 80" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="1.5" />
                 {/* BORDE / PUÑO de manga (color propio) */}
-                <path d={lCuff} fill="none" stroke={cuffColor} strokeWidth="5" strokeLinecap="round" />
-                <path d={rCuff} fill="none" stroke={cuffColor} strokeWidth="5" strokeLinecap="round" />
-                <path d={lCuff} fill="none" stroke={shade(cuffColor, -20)} strokeWidth="1" strokeLinecap="round" />
-                <path d={rCuff} fill="none" stroke={shade(cuffColor, -20)} strokeWidth="1" strokeLinecap="round" />
-                {/* CUELLO tipo ribete (color propio) */}
-                <path d={collarPath} fill="none" stroke={shade(collarColor, -22)} strokeWidth="8" strokeLinecap="round" opacity="0.45" transform="translate(0,2.2)" />
-                <path d={collarPath} fill="none" stroke={collarColor} strokeWidth="7.5" strokeLinecap="round" />
-                <path d={collarPath} fill="none" stroke={shade(collarColor, isLightHex(collarColor) ? 14 : 34)} strokeWidth="2" strokeLinecap="round" opacity="0.75" transform="translate(0,-1.2)" />
+                <path d={lCuff} fill="none" stroke={cuffColor} strokeWidth="4" strokeLinecap="round" />
+                <path d={rCuff} fill="none" stroke={cuffColor} strokeWidth="4" strokeLinecap="round" />
+                <path d={lCuff} fill="none" stroke={shade(cuffColor, -18)} strokeWidth="1" strokeLinecap="round" />
+                <path d={rCuff} fill="none" stroke={shade(cuffColor, -18)} strokeWidth="1" strokeLinecap="round" />
+                {/* CUELLO redondo tipo ribete (color propio) */}
+                <path d={collarPath} fill="none" stroke={shade(collarColor, -18)} strokeWidth="7" strokeLinecap="round" opacity="0.5" transform="translate(0,1.6)" />
+                <path d={collarPath} fill="none" stroke={collarColor} strokeWidth="6.5" strokeLinecap="round" />
+                <path d={collarPath} fill="none" stroke={shade(collarColor, isLightHex(collarColor) ? 12 : 30)} strokeWidth="2" strokeLinecap="round" opacity="0.8" transform="translate(0,-1)" />
                 {/* contorno limpio */}
-                <path d={shirtOutline} fill="none" stroke={color === '#ffffff' ? '#cbd5e1' : 'rgba(0,0,0,0.18)'} strokeWidth="1.4" strokeLinejoin="round" strokeLinecap="round" />
+                <path d={shirtOutline} fill="none" stroke={color === '#ffffff' ? '#c4cbd4' : 'rgba(0,0,0,0.16)'} strokeWidth="1.4" strokeLinejoin="round" strokeLinecap="round" />
               </g>
             ) : (
               <g filter="url(#drop)">
