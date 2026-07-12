@@ -133,7 +133,7 @@ export default function ProductCustomizer({ id }: { id: string }) {
 
   return (
     <div>
-      <Link href="/tienda" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-teal-600 mb-4">
+      <Link href="/tienda" className="inline-flex items-center gap-1 text-sm text-gray-200 hover:text-white mb-4">
         <ArrowLeft size={16} /> Volver
       </Link>
 
@@ -149,7 +149,7 @@ export default function ProductCustomizer({ id }: { id: string }) {
         </div>
 
         {/* Personalizador */}
-        <div className="space-y-5">
+        <div className="space-y-5 bg-white rounded-2xl border border-gray-200 p-5 shadow-sm self-start">
           <div>
             <p className="text-sm text-teal-500 font-medium">{CATEGORY_LABEL[product.category] ?? product.category}</p>
             <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
