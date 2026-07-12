@@ -1,7 +1,7 @@
 {
   "name": "sublicolor",
   "private": true,
-  "packageManager": "pnpm@11.5.2",
+  "packageManager": "pnpm@9.15.9",
   "scripts": {
     "dev": "concurrently \"pnpm --filter @sublicolor/api start:dev\" \"pnpm --filter @sublicolor/web dev\"",
     "build": "pnpm --filter @sublicolor/api build && pnpm --filter @sublicolor/web build",
