@@ -15,23 +15,46 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { ShopModule } from './modules/shop/shop.module';
 import { SocialModule } from './modules/social/social.module';
+import { HealthController } from './health.controller';
+
+// Config de Redis: en producción (Render) basta con REDIS_URL; en local se usan
+// REDIS_HOST/PORT/PASSWORD del docker-compose.
+function redisConnection() {
+  const url = process.env.REDIS_URL;
+  if (url) {
+    const u = new URL(url);
+    return {
+      host: u.hostname,
+      port: parseInt(u.port || '6379'),
+      username: u.username || undefined,
+      password: u.password ? decodeURIComponent(u.password) : undefined,
+      tls: u.protocol === 'rediss:' ? {} : undefined,
+      maxRetriesPerRequest: null as null,
+    };
+  }
+  return {
+    host: process.env.REDIS_HOST ?? 'localhost',
+    port: parseInt(process.env.REDIS_PORT ?? '6379'),
+    password: process.env.REDIS_PASSWORD || undefined,
+    maxRetriesPerRequest: null as null,
+  };
+}
+
+function redisUrl() {
+  if (process.env.REDIS_URL) return process.env.REDIS_URL;
+  const pw = process.env.REDIS_PASSWORD;
+  const host = process.env.REDIS_HOST ?? 'localhost';
+  const port = process.env.REDIS_PORT ?? '6379';
+  return pw ? `redis://:${pw}@${host}:${port}` : `redis://${host}:${port}`;
+}
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
 
-    BullModule.forRoot({
-      connection: {
-        host: process.env.REDIS_HOST ?? 'localhost',
-        port: parseInt(process.env.REDIS_PORT ?? '6379'),
-        password: process.env.REDIS_PASSWORD,
-      },
-    }),
+    BullModule.forRoot({ connection: redisConnection() }),
 
-    RedisModule.forRoot({
-      type: 'single',
-      url: `redis://:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST ?? 'localhost'}:${process.env.REDIS_PORT ?? 6379}`,
-    }),
+    RedisModule.forRoot({ type: 'single', url: redisUrl() }),
 
     DatabaseModule,
     AuthModule,
@@ -47,5 +70,6 @@ import { SocialModule } from './modules/social/social.module';
     ShopModule,
     SocialModule,
   ],
+  controllers: [HealthController],
 })
 export class AppModule {}

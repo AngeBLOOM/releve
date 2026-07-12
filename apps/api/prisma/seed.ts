@@ -1,127 +1,255 @@
-import { PrismaClient, SublimationType } from '@prisma/client';
+import { PrismaClient, SublimationType, ProductCategory } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
+// ---------------------------------------------------------------------------
+// Catálogo Relevé — reconstruido a partir de las imágenes del proyecto y los
+// precios indicados por la dueña. Los precios marcados con (REVISAR) son
+// estimados razonables; se pueden ajustar desde el panel de administración.
+//
+// Modelo de precio en la tienda:  precio = regla(unitPrice por sublimado/cantidad)
+//                                          + recargo de la variante (priceModifier)
+// Recargos de franela:  tallas hasta L = 0, XL = +1, XXL = +2
+//                       colores claros = 0, colores oscuros/negro = +3
+// ---------------------------------------------------------------------------
+
+type VariantSeed = {
+  sku: string;
+  label: string;
+  size?: string;
+  color?: string;
+  costPrice: number;
+  priceModifier?: number;
+};
+
+const SIZES: Array<{ size: string; mod: number }> = [
+  { size: 'S', mod: 0 },
+  { size: 'M', mod: 0 },
+  { size: 'L', mod: 0 },
+  { size: 'XL', mod: 1 },
+  { size: 'XXL', mod: 2 },
+];
+
+const LIGHT_COLORS = ['Blanco', 'Celeste', 'Rosado', 'Amarillo', 'Gris'];
+const DARK_COLORS = ['Negro', 'Azul Oscuro', 'Rojo Vino'];
+
+// Genera variantes de franela por talla y color (recargo talla + recargo color)
+function shirtVariants(prefix: string, opts?: { colors?: boolean; costPrice?: number }): VariantSeed[] {
+  const cost = opts?.costPrice ?? 4.5;
+  const colors = opts?.colors
+    ? [...LIGHT_COLORS.map((c) => ({ color: c, mod: 0 })), ...DARK_COLORS.map((c) => ({ color: c, mod: 3 }))]
+    : [{ color: 'Blanco', mod: 0 }];
+  const out: VariantSeed[] = [];
+  for (const c of colors) {
+    for (const s of SIZES) {
+      out.push({
+        sku: `${prefix}-${s.size}-${c.color.slice(0, 3).toUpperCase()}`,
+        label: `Talla ${s.size} · ${c.color}`,
+        size: s.size,
+        color: c.color,
+        costPrice: cost,
+        priceModifier: s.mod + c.mod,
+      });
+    }
+  }
+  return out;
+}
+
+type ProductSeed = {
+  id: string;
+  name: string;
+  category: ProductCategory;
+  description: string;
+  imageUrl: string;
+  variants: VariantSeed[];
+  pricing: Array<{ type: SublimationType; min: number; max: number | null; price: number }>;
+};
+
+// Franelas de diseño listo (frente y espalda tamaño carta) — $7 colores claros
+const designShirts: ProductSeed[] = Array.from({ length: 13 }, (_, i) => {
+  const n = i + 1;
+  return {
+    id: `prod-franela-dis-${n}`,
+    name: `Franela Diseño ${n}`,
+    category: 'SHIRT' as ProductCategory,
+    description: 'Franela en microdurazno con diseño listo, sublimación frente y espalda tamaño carta.',
+    imageUrl: `/products/franela-dis-${n}.png`,
+    variants: shirtVariants(`FD${n}`, { colors: true }),
+    pricing: [{ type: 'FULL_FRONT_BACK', min: 1, max: null, price: 7.0 }],
+  };
+});
+
+const collections: ProductSeed[] = (
+  [
+    ['col-basica', 'Colección Básica', 'col-basica.png'],
+    ['col-animales', 'Colección Animales', 'col-animales.png'],
+    ['col-equipos', 'Colección Equipos', 'col-equipos.png'],
+    ['col-sistema-solar', 'Colección Sistema Solar', 'col-sistema-solar.png'],
+    ['col-sport', 'Colección Sport', 'col-sport.png'],
+  ] as Array<[string, string, string]>
+).map(([slug, name, img]) => ({
+  id: `prod-${slug}`,
+  name,
+  category: 'SHIRT' as ProductCategory,
+  description: 'Franela en microdurazno con diseño de colección, sublimación frente y espalda tamaño carta.',
+  imageUrl: `/products/${img}`,
+  variants: shirtVariants(slug.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 6), { colors: true }),
+  pricing: [{ type: 'FULL_FRONT_BACK' as SublimationType, min: 1, max: null, price: 7.0 }],
+}));
+
+const uniforms: ProductSeed[] = (
+  [
+    ['uni-depor-1', 'Uniforme Deportivo Sublimado 1', 'uni-depor-1.png', 25],
+    ['uni-depor-2', 'Uniforme Deportivo Sublimado 2', 'uni-depor-6.png', 25],
+    ['uni-depor-3', 'Uniforme Deportivo Sublimado 3', 'uni-depor-7.png', 25],
+    ['uni-baile-1', 'Uniforme de Baile 1', 'uni-baile-1.png', 25],
+    ['uni-baile-2', 'Uniforme de Baile 2', 'uni-baile-2.png', 25],
+    ['uni-baile-3', 'Uniforme de Baile 3', 'uni-baile-3.png', 25],
+    ['uni-baile-4', 'Uniforme de Baile 4', 'uni-baile-4.png', 25],
+  ] as Array<[string, string, string, number]>
+).map(([slug, name, img, price]) => ({
+  id: `prod-${slug}`,
+  name,
+  category: 'SPORTSWEAR' as ProductCategory,
+  description: 'Uniforme con sublimación completa. Personalizable con nombres, números y colores.',
+  imageUrl: `/products/${img}`,
+  variants: SIZES.map((s) => ({
+    sku: `${slug.toUpperCase().replace(/[^A-Z0-9]/g, '')}-${s.size}`,
+    label: `Talla ${s.size}`,
+    size: s.size,
+    color: 'Full color',
+    costPrice: 12,
+    priceModifier: s.mod,
+  })),
+  pricing: [{ type: 'FULL_FRONT_BACK' as SublimationType, min: 1, max: null, price }], // (REVISAR)
+}));
+
+const coreProducts: ProductSeed[] = [
+  {
+    id: 'prod-franela-personalizada',
+    name: 'Franela Personalizada',
+    category: 'SHIRT',
+    description:
+      'Franela en microdurazno. Sube tu propio diseño (frente y espalda tamaño carta). Colores claros $7, oscuros $10.',
+    imageUrl: '/products/franela.png',
+    variants: shirtVariants('FPER', { colors: true }),
+    pricing: [
+      { type: 'FULL_FRONT', min: 1, max: null, price: 5.0 },
+      { type: 'FULL_FRONT_BACK', min: 1, max: null, price: 7.0 },
+    ],
+  },
+  {
+    id: 'prod-combo-duo',
+    name: 'Combo Dúo (Parejas)',
+    category: 'SHIRT',
+    description: 'Dos franelas a juego para parejas, sublimación frente y espalda tamaño carta. ¡El más pedido! 💜',
+    imageUrl: '/products/combo-duo.png',
+    variants: [{ sku: 'DUO-STD', label: 'Combo 2 franelas', size: 'Combo', color: 'A elección', costPrice: 9 }],
+    pricing: [{ type: 'FULL_FRONT_BACK', min: 1, max: null, price: 13.0 }], // (REVISAR)
+  },
+  {
+    id: 'prod-taza-11oz',
+    name: 'Taza 11oz',
+    category: 'MUG',
+    description: 'Taza cerámica blanca 11oz apta para sublimación de alta calidad.',
+    imageUrl: '/products/taza.png',
+    variants: [{ sku: 'TZ-11-BLA', label: 'Taza 11oz Blanca', size: '11oz', color: 'Blanco', costPrice: 2.5 }],
+    pricing: [
+      { type: 'A4', min: 1, max: 11, price: 5.0 },
+      { type: 'A4', min: 12, max: null, price: 4.5 },
+    ],
+  },
+  {
+    id: 'prod-gorra',
+    name: 'Gorra Sublimada',
+    category: 'CAP',
+    description: 'Gorra con panel frontal sublimable. Ideal para logos y diseños.',
+    imageUrl: '/products/gorra.png',
+    variants: [{ sku: 'GO-STD', label: 'Gorra ajustable', size: 'Única', color: 'Blanco/Color', costPrice: 4 }],
+    pricing: [{ type: 'LOGO_SMALL', min: 1, max: null, price: 8.0 }], // (REVISAR)
+  },
+  {
+    id: 'prod-sueter',
+    name: 'Suéter Sublimado',
+    category: 'SWEATER',
+    description: 'Suéter en microdurazno para sublimación. Abrigado y personalizable.',
+    imageUrl: '/products/sueter.png',
+    variants: shirtVariants('SUET'),
+    pricing: [{ type: 'FULL_FRONT_BACK', min: 1, max: null, price: 15.0 }], // (REVISAR)
+  },
+  {
+    id: 'prod-uniforme-full',
+    name: 'Uniforme Full Sublimación',
+    category: 'SPORTSWEAR',
+    description: 'Kit de uniforme con sublimación total. Personalizable con nombres, números, escudo y colores.',
+    imageUrl: '/products/uniforme.png',
+    variants: SIZES.map((s) => ({
+      sku: `UNIF-${s.size}`,
+      label: `Talla ${s.size}`,
+      size: s.size,
+      color: 'Full color',
+      costPrice: 14,
+      priceModifier: s.mod,
+    })),
+    pricing: [{ type: 'FULL_FRONT_BACK', min: 1, max: null, price: 30.0 }], // (REVISAR)
+  },
+];
+
+const ALL_PRODUCTS: ProductSeed[] = [...coreProducts, ...designShirts, ...collections, ...uniforms];
+
 async function main() {
-  console.log('Ejecutando seed...');
+  console.log('Ejecutando seed de Relevé...');
 
   const hash = await bcrypt.hash('admin1234', 10);
   await prisma.agent.upsert({
     where: { email: 'admin@sublicolor.com' },
     update: {},
-    create: {
-      name: 'Administrador',
-      email: 'admin@sublicolor.com',
-      password: hash,
-      role: 'ADMIN',
-    },
+    create: { name: 'Administrador', email: 'admin@sublicolor.com', password: hash, role: 'ADMIN' },
   });
-  console.log('✅ Agente admin creado');
+  console.log('✅ Agente admin listo (admin@sublicolor.com / admin1234)');
 
-  const franelaCotton = await prisma.baseProduct.upsert({
-    where: { id: 'prod-franela-cotton' },
-    update: {},
-    create: {
-      id: 'prod-franela-cotton',
-      name: 'Franela Algodón',
-      category: 'SHIRT',
-      description: '100% algodón peinado, sublimación directa. Colores claros recomendados.',
-      variants: {
-        create: [
-          { sku: 'FC-S-BLA', label: 'Talla S - Blanca', size: 'S', color: 'Blanco', costPrice: 4.5 },
-          { sku: 'FC-M-BLA', label: 'Talla M - Blanca', size: 'M', color: 'Blanco', costPrice: 4.5 },
-          { sku: 'FC-L-BLA', label: 'Talla L - Blanca', size: 'L', color: 'Blanco', costPrice: 5.0 },
-          { sku: 'FC-XL-BLA', label: 'Talla XL - Blanca', size: 'XL', color: 'Blanco', costPrice: 5.5 },
-        ],
+  // Reglas de precio: se regeneran en cada seed (config derivada, sin datos de pedidos)
+  await prisma.pricingRule.deleteMany({});
+
+  let nProd = 0;
+  let nRule = 0;
+  for (const p of ALL_PRODUCTS) {
+    await prisma.baseProduct.upsert({
+      where: { id: p.id },
+      update: { name: p.name, category: p.category, description: p.description, imageUrl: p.imageUrl },
+      create: {
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        description: p.description,
+        imageUrl: p.imageUrl,
+        variants: { create: p.variants.map((v) => ({ ...v, priceModifier: v.priceModifier ?? 0 })) },
       },
-    },
-  });
-
-  const franelaPoly = await prisma.baseProduct.upsert({
-    where: { id: 'prod-franela-poly' },
-    update: {},
-    create: {
-      id: 'prod-franela-poly',
-      name: 'Franela Poliéster',
-      category: 'SHIRT',
-      description: 'Poliéster 100%, colores vivos y durabilidad superior en sublimación.',
-      variants: {
-        create: [
-          { sku: 'FP-S-BLA', label: 'Talla S - Blanca', size: 'S', color: 'Blanco', costPrice: 5.0 },
-          { sku: 'FP-M-BLA', label: 'Talla M - Blanca', size: 'M', color: 'Blanco', costPrice: 5.0 },
-          { sku: 'FP-L-BLA', label: 'Talla L - Blanca', size: 'L', color: 'Blanco', costPrice: 5.5 },
-          { sku: 'FP-XL-BLA', label: 'Talla XL - Blanca', size: 'XL', color: 'Blanco', costPrice: 6.0 },
-        ],
-      },
-    },
-  });
-
-  const tazaCeramica = await prisma.baseProduct.upsert({
-    where: { id: 'prod-taza-ceramica' },
-    update: {},
-    create: {
-      id: 'prod-taza-ceramica',
-      name: 'Taza Cerámica 11oz',
-      category: 'MUG',
-      description: 'Taza blanca 11oz apta para sublimación de alta calidad.',
-      variants: {
-        create: [
-          { sku: 'TC-11-BLA', label: 'Taza 11oz Blanca', size: '11oz', color: 'Blanco', costPrice: 2.5 },
-        ],
-      },
-    },
-  });
-
-  const tazaMagica = await prisma.baseProduct.upsert({
-    where: { id: 'prod-taza-magica' },
-    update: {},
-    create: {
-      id: 'prod-taza-magica',
-      name: 'Taza Mágica 11oz',
-      category: 'MUG',
-      description: 'Cambia de color al contacto con bebidas calientes. Efecto sorpresa.',
-      variants: {
-        create: [
-          { sku: 'TM-11-NEG', label: 'Taza Mágica 11oz Negra', size: '11oz', color: 'Negro', costPrice: 4.0 },
-        ],
-      },
-    },
-  });
-  console.log('✅ Productos creados');
-
-  const pricingData: Array<{
-    baseProductId: string;
-    sublimationType: SublimationType;
-    minQuantity: number;
-    maxQuantity: number | null;
-    unitPrice: number;
-  }> = [
-    { baseProductId: franelaCotton.id, sublimationType: 'LOGO_SMALL',      minQuantity: 1,  maxQuantity: 9,   unitPrice: 8.00 },
-    { baseProductId: franelaCotton.id, sublimationType: 'LOGO_SMALL',      minQuantity: 10, maxQuantity: null, unitPrice: 7.00 },
-    { baseProductId: franelaCotton.id, sublimationType: 'FULL_FRONT',      minQuantity: 1,  maxQuantity: 9,   unitPrice: 12.00 },
-    { baseProductId: franelaCotton.id, sublimationType: 'FULL_FRONT',      minQuantity: 10, maxQuantity: null, unitPrice: 10.00 },
-    { baseProductId: franelaCotton.id, sublimationType: 'FULL_FRONT_BACK', minQuantity: 1,  maxQuantity: 9,   unitPrice: 18.00 },
-    { baseProductId: franelaCotton.id, sublimationType: 'FULL_FRONT_BACK', minQuantity: 10, maxQuantity: null, unitPrice: 15.00 },
-    { baseProductId: franelaPoly.id,   sublimationType: 'FULL_FRONT',      minQuantity: 1,  maxQuantity: 9,   unitPrice: 14.00 },
-    { baseProductId: franelaPoly.id,   sublimationType: 'FULL_FRONT',      minQuantity: 10, maxQuantity: null, unitPrice: 12.00 },
-    { baseProductId: franelaPoly.id,   sublimationType: 'FULL_FRONT_BACK', minQuantity: 1,  maxQuantity: 9,   unitPrice: 20.00 },
-    { baseProductId: franelaPoly.id,   sublimationType: 'FULL_FRONT_BACK', minQuantity: 10, maxQuantity: null, unitPrice: 17.00 },
-    { baseProductId: tazaCeramica.id,  sublimationType: 'A4',              minQuantity: 1,  maxQuantity: 5,   unitPrice: 7.00 },
-    { baseProductId: tazaCeramica.id,  sublimationType: 'A4',              minQuantity: 6,  maxQuantity: null, unitPrice: 6.00 },
-    { baseProductId: tazaMagica.id,    sublimationType: 'A4',              minQuantity: 1,  maxQuantity: 5,   unitPrice: 10.00 },
-    { baseProductId: tazaMagica.id,    sublimationType: 'A4',              minQuantity: 6,  maxQuantity: null, unitPrice: 9.00 },
-  ];
-
-  for (const rule of pricingData) {
-    await prisma.pricingRule.create({ data: rule });
+    });
+    for (const r of p.pricing) {
+      await prisma.pricingRule.create({
+        data: {
+          baseProductId: p.id,
+          sublimationType: r.type,
+          minQuantity: r.min,
+          maxQuantity: r.max,
+          unitPrice: r.price,
+        },
+      });
+      nRule++;
+    }
+    nProd++;
   }
-  console.log('✅ Reglas de precios creadas');
 
-  console.log('\n🎉 Seed completado exitosamente');
-  console.log('   Login: admin@sublicolor.com / admin1234');
+  console.log(`✅ ${nProd} productos y ${nRule} reglas de precio cargadas`);
+  console.log('\n🎉 Seed de Relevé completado');
+  console.log('   ⚠️  Revisa en el panel los precios (REVISAR): combos, gorra, suéter y uniformes.');
 }
 
 main()
-  .catch(e => { console.error(e); process.exit(1); })
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
   .finally(() => prisma.$disconnect());

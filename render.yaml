@@ -1,0 +1,64 @@
+# Blueprint de Render para el backend de Relevé (API NestJS + Redis).
+# La base de datos PostgreSQL es externa (Neon) -> se configura DATABASE_URL.
+# La tienda web (Next.js) se despliega aparte en Vercel.
+#
+# Uso: en Render -> New -> Blueprint -> conectar el repo AngeBLOOM/releve.
+# Luego pega los valores marcados "sync: false" (secretos) en el panel.
+
+services:
+  # Redis interno (colas del bot + publicaciones automáticas)
+  - type: keyvalue
+    name: releve-redis
+    plan: free
+    region: virginia
+    maxmemoryPolicy: noeviction
+    ipAllowList: [] # solo accesible internamente por la API
+
+  # API + bot (NestJS)
+  - type: web
+    name: releve-api
+    runtime: node
+    plan: free
+    region: virginia # cerca de Neon (us-east-1) para conexión rápida y estable
+    rootDir: .
+    buildCommand: corepack enable && pnpm install --no-frozen-lockfile && pnpm --filter @sublicolor/api prisma:generate && pnpm --filter @sublicolor/api build
+    # migraciones + carga del catálogo: una vez por despliegue (no en cada arranque)
+    preDeployCommand: pnpm --filter @sublicolor/api prisma:deploy && pnpm --filter @sublicolor/api db:seed
+    startCommand: pnpm --filter @sublicolor/api start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: '20'
+      - key: PORT
+        value: '3001'
+      # Base de datos Neon (cadena "pooler" con sslmode=require) -> pegar en el panel
+      - key: DATABASE_URL
+        sync: false
+      # Redis interno (se conecta solo)
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: releve-redis
+          property: connectionString
+      # Dominio de la tienda en Vercel (para CORS y enlaces) -> pegar tras crear Vercel
+      - key: WEB_URL
+        sync: false
+      - key: STORE_PUBLIC_URL
+        sync: false
+      # Seguridad
+      - key: JWT_SECRET
+        generateValue: true
+      # WhatsApp / Meta -> pegar en el panel
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: META_APP_ID
+        sync: false
+      - key: META_APP_SECRET
+        sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        value: sublicolor_webhook_2024
+      # IA del bot (opcional) -> pegar si se usa
+      - key: OPENAI_API_KEY
+        sync: false
