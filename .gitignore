@@ -1,0 +1,42 @@
+# === Secretos (NUNCA subir a GitHub) ===
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.local
+**/.env.*.local
+
+# === Dependencias ===
+node_modules/
+.pnpm-store/
+
+# === Builds / salidas ===
+dist/
+build/
+.next/
+out/
+apps/api/dist/
+apps/web/.next/
+
+# === Prisma ===
+# (el cliente generado se regenera en el deploy)
+
+# === Logs / temporales ===
+*.log
+npm-debug.log*
+pnpm-debug.log*
+_cleanup*.sql
+_franela*.sql
+_remove*.sql
+
+# === Subidas locales de diseños (se regeneran / van a storage) ===
+apps/api/uploads/
+
+# === Sistema ===
+.DS_Store
+Thumbs.db
+*.bak
+
+# === Editor ===
+.vscode/
+.idea/

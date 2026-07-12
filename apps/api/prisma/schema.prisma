@@ -1,0 +1,343 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  whatsappId  String?  @unique
+  instagramId String?  @unique
+  messengerId String?  @unique
+
+  displayName String
+  phone       String?
+  email       String?
+  notes       String?
+
+  conversations Conversation[]
+  orders        Order[]
+
+  @@index([whatsappId, instagramId, messengerId])
+}
+
+model Conversation {
+  id         String             @id @default(uuid())
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  customer   Customer           @relation(fields: [customerId], references: [id])
+  customerId String
+
+  channel    Channel
+  channelId  String
+
+  status     ConversationStatus @default(BOT_ACTIVE)
+
+  messages   Message[]
+  botSession BotSession?
+
+  @@unique([channelId, channel])
+  @@index([customerId, channel])
+  @@index([status])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  createdAt      DateTime     @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String
+
+  direction      Direction
+  sender         String
+  content        String       @db.Text
+  mediaUrl       String?
+  messageType    MessageType  @default(TEXT)
+  externalId     String?
+  isRead         Boolean      @default(false)
+
+  @@index([conversationId, createdAt])
+}
+
+model BotSession {
+  id             String       @id @default(uuid())
+  updatedAt      DateTime     @updatedAt
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String       @unique
+
+  currentFlow    String?
+  currentStep    String?
+  context        Json         @default("{}")
+}
+
+model BaseProduct {
+  id           String          @id @default(uuid())
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  name         String
+  category     ProductCategory
+  description  String?         @db.Text
+  imageUrl     String?
+  isActive     Boolean         @default(true)
+
+  variants     ProductVariant[]
+  pricingRules PricingRule[]
+}
+
+model ProductVariant {
+  id            String      @id @default(uuid())
+  baseProduct   BaseProduct @relation(fields: [baseProductId], references: [id])
+  baseProductId String
+
+  sku           String      @unique
+  label         String
+  size          String?
+  color         String?
+  costPrice     Decimal     @db.Decimal(10, 2)
+  priceModifier Decimal     @db.Decimal(10, 2) @default(0) // recargo por color/talla sobre el precio base
+  isActive      Boolean     @default(true)
+
+  stockItems    InventoryItem[]
+  orderItems    OrderItem[]
+}
+
+model PricingRule {
+  id              String          @id @default(uuid())
+  baseProduct     BaseProduct     @relation(fields: [baseProductId], references: [id])
+  baseProductId   String
+
+  sublimationType SublimationType
+  minQuantity     Int             @default(1)
+  maxQuantity     Int?
+  unitPrice       Decimal         @db.Decimal(10, 2)
+  isActive        Boolean         @default(true)
+
+  @@index([baseProductId, minQuantity])
+}
+
+model InventoryItem {
+  id         String         @id @default(uuid())
+  updatedAt  DateTime       @updatedAt
+
+  variant    ProductVariant @relation(fields: [variantId], references: [id])
+  variantId  String         @unique
+
+  quantity   Int            @default(0)
+  minStock   Int            @default(5)
+  location   String?
+
+  movements  InventoryMovement[]
+}
+
+model InventoryMovement {
+  id          String        @id @default(uuid())
+  createdAt   DateTime      @default(now())
+
+  item        InventoryItem @relation(fields: [itemId], references: [id])
+  itemId      String
+
+  type        MovementType
+  quantity    Int
+  reason      String?
+  referenceId String?
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  orderNumber String      @unique @default(cuid())
+
+  customer    Customer    @relation(fields: [customerId], references: [id])
+  customerId  String
+
+  status        OrderStatus   @default(PENDING_DESIGN)
+  channel       Channel
+  notes         String?       @db.Text
+
+  subtotal      Decimal       @db.Decimal(10, 2)
+  discount      Decimal       @db.Decimal(10, 2) @default(0)
+  total         Decimal       @db.Decimal(10, 2)
+
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod String?
+
+  deliveryType    DeliveryType @default(PICKUP)
+  deliveryAddress String?
+
+  items         OrderItem[]
+  designs       OrderDesign[]
+  statusHistory OrderStatusHistory[]
+}
+
+model OrderItem {
+  id        String         @id @default(uuid())
+  order     Order          @relation(fields: [orderId], references: [id])
+  orderId   String
+
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  variantId String
+
+  sublimationType SublimationType
+  quantity        Int
+  unitPrice       Decimal         @db.Decimal(10, 2)
+  subtotal        Decimal         @db.Decimal(10, 2)
+  customNotes     String?
+}
+
+model OrderDesign {
+  id         String   @id @default(uuid())
+  order      Order    @relation(fields: [orderId], references: [id])
+  orderId    String
+
+  fileUrl    String
+  fileName   String
+  mimeType   String
+  uploadedAt DateTime @default(now())
+  approved   Boolean  @default(false)
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(uuid())
+  createdAt DateTime    @default(now())
+  order     Order       @relation(fields: [orderId], references: [id])
+  orderId   String
+  status    OrderStatus
+  changedBy String
+  note      String?
+}
+
+model SocialPost {
+  id            String         @id @default(uuid())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  platform      SocialPlatform
+  status        PostStatus     @default(DRAFT)
+
+  caption       String         @db.Text
+  imageUrl      String?
+  linkUrl       String?
+
+  baseProductId String?
+  origin        String         @default("MANUAL") // MANUAL | AUTOPILOT
+
+  scheduledFor  DateTime?
+  publishedAt   DateTime?
+  externalId    String?
+  error         String?
+
+  @@index([status, scheduledFor])
+  @@index([platform, createdAt])
+}
+
+model Agent {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  password  String
+  role      AgentRole @default(OPERATOR)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+}
+
+enum Channel {
+  WHATSAPP
+  INSTAGRAM
+  MESSENGER
+  WEB
+}
+
+enum ConversationStatus {
+  BOT_ACTIVE
+  HUMAN_TAKEOVER
+  CLOSED
+}
+
+enum Direction {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  DOCUMENT
+  AUDIO
+  TEMPLATE
+  INTERACTIVE
+}
+
+enum ProductCategory {
+  MUG
+  SHIRT
+  SWEATER
+  CAP
+  PEN
+  SPORTSWEAR
+  OTHER
+}
+
+enum SublimationType {
+  LOGO_SMALL
+  HALF_FRONT
+  FULL_FRONT
+  FULL_FRONT_BACK
+  A4
+  A3
+}
+
+enum OrderStatus {
+  PENDING_DESIGN
+  PRINT_QUEUE
+  SUBLIMATING
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  REFUNDED
+}
+
+enum DeliveryType {
+  PICKUP
+  DELIVERY
+}
+
+enum MovementType {
+  IN
+  OUT
+  ADJUSTMENT
+}
+
+enum AgentRole {
+  ADMIN
+  OPERATOR
+}
+
+enum SocialPlatform {
+  FACEBOOK
+  INSTAGRAM
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHING
+  PUBLISHED
+  FAILED
+}

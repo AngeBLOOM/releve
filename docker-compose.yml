@@ -1,0 +1,58 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sublimation_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sublimation
+      POSTGRES_PASSWORD: sublimation_secret
+      POSTGRES_DB: sublimation_store
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: sublimation_redis
+    restart: unless-stopped
+    command: redis-server --requirepass redis_secret --appendonly yes
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
+  api:
+    build:
+      context: ./apps/api
+      target: dev
+    container_name: sublimation_api
+    restart: unless-stopped
+    env_file: ./apps/api/.env
+    ports:
+      - '3001:3001'
+    volumes:
+      - ./apps/api/src:/app/src
+    depends_on:
+      - postgres
+      - redis
+
+  web:
+    build:
+      context: ./apps/web
+      target: dev
+    container_name: sublimation_web
+    restart: unless-stopped
+    env_file: ./apps/web/.env.local
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./apps/web/src:/app/src
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  redis_data:
