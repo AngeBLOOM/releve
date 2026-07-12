@@ -22,9 +22,8 @@ services:
     region: virginia # cerca de Neon (us-east-1) para conexión rápida y estable
     rootDir: .
     buildCommand: corepack enable && pnpm install --no-frozen-lockfile && pnpm --filter @sublicolor/api prisma:generate && pnpm --filter @sublicolor/api build
-    # migraciones + carga del catálogo: una vez por despliegue (no en cada arranque)
-    preDeployCommand: pnpm --filter @sublicolor/api prisma:deploy && pnpm --filter @sublicolor/api db:seed
-    startCommand: pnpm --filter @sublicolor/api start
+    # plan gratis: migraciones + carga del catálogo se hacen al arrancar (son idempotentes)
+    startCommand: pnpm --filter @sublicolor/api prisma:deploy && pnpm --filter @sublicolor/api db:seed && pnpm --filter @sublicolor/api start
     healthCheckPath: /health
     envVars:
       - key: NODE_VERSION
