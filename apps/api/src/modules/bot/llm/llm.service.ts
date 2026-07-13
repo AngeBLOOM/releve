@@ -7,13 +7,24 @@ import { buildSalesAgentPrompt } from './prompts/sales-agent.prompt';
 @Injectable()
 export class LlmService {
   private readonly logger = new Logger(LlmService.name);
-  private readonly client: OpenAI;
+  private readonly client: OpenAI | null;
 
   constructor(private readonly prisma: PrismaService) {
-    this.client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const apiKey = process.env.OPENAI_API_KEY;
+    // La IA es opcional: sin clave, el bot funciona con sus menús normales.
+    this.client = apiKey ? new OpenAI({ apiKey }) : null;
+    if (!this.client) {
+      this.logger.warn('OPENAI_API_KEY no configurada — el bot responderá con los menús (sin IA).');
+    }
   }
 
   async ask(userText: string, conversationId: string): Promise<BotReply> {
+    if (!this.client) {
+      return {
+        type: 'TEXT',
+        text: 'Escribe *menú* para ver nuestras opciones, o en un momento te atiende un asesor. 🙋',
+      };
+    }
     try {
       const history = await this.prisma.message.findMany({
         where: { conversationId },
@@ -33,7 +44,7 @@ export class LlmService {
         { role: 'user', content: userText },
       ];
 
-      const response = await this.client.chat.completions.create({
+      const response = await this.client!.chat.completions.create({
         model: 'gpt-4o-mini',
         messages,
         max_tokens: 400,
