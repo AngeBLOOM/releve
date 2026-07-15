@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+// Tienda Relevé — proxy /api hacia el servidor de Render (Neon + Redis).
 const nextConfig = {
   output: 'standalone',
   async rewrites() {
