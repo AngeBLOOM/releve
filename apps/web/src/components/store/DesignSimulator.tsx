@@ -3,7 +3,7 @@ import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Upload, RotateCcw } from 'lucide-react';
 
-const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? '';
+const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? '584120846332';
 
 type Garment = 'SHIRT' | 'MUG';
 

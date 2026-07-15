@@ -5,7 +5,7 @@ import { Trash2, Loader2, CheckCircle2 } from 'lucide-react';
 import { useCart } from '@/store/cart.store';
 
 // Cambia este número por el WhatsApp real del negocio (formato internacional, sin +)
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP ?? '';
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP ?? '584120846332';
 
 interface Confirmation { orderNumber: string; total: string }
 

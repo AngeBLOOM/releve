@@ -5,7 +5,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.API_URL ?? 'http://localhost:3001'}/:path*`,
+        destination: `${process.env.API_URL ?? 'https://releve-api-6abw.onrender.com'}/:path*`,
       },
     ];
   },
