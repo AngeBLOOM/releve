@@ -56,8 +56,13 @@ services:
         sync: false
       - key: META_APP_SECRET
         sync: false
-      - key: WHATSAPP_VERIFY_TOKEN
+      - key: META_VERIFY_TOKEN
         value: sublicolor_webhook_2024
+      # Tokens de cada canal (pegar en el panel de Render cuando se conecten)
+      - key: MESSENGER_PAGE_ACCESS_TOKEN
+        sync: false
+      - key: INSTAGRAM_ACCESS_TOKEN
+        sync: false
       # IA del bot (opcional) -> pegar si se usa
       - key: OPENAI_API_KEY
         sync: false

@@ -45,8 +45,8 @@ export class BotService {
 
     if (menuSelection === 'CATALOG') {
       await this.session.clear(ctx.conversationId);
-      const store = process.env.STORE_PUBLIC_URL;
-      const link = store ? `\n\n🛍️ *Míralo todo aquí:* ${store}/tienda` : '';
+      const store = process.env.STORE_PUBLIC_URL ?? 'https://releve-tienda.vercel.app';
+      const link = `\n\n🛍️ *Míralo todo aquí:* ${store}/tienda`;
       return { type: 'TEXT', text: `📋 *Nuestro catálogo Relevé:*\n\n👕 Franelas personalizadas (claros y oscuros)\n💑 Combo Dúo para parejas\n🧥 Suéteres / sudaderas\n🧢 Gorras sublimadas\n🏅 Uniformes deportivos full sublimación\n☕ Tazas 11oz${link}\n\n¿Qué te interesa? Dime y te cotizo 💜` };
     }
     if (menuSelection === 'QUOTE') return this.quote.start(ctx);
