@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const API_URL = process.env.API_URL ?? 'https://releve-api-6abw.onrender.com';
+
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const res = await fetch(`${process.env.API_URL}/auth/login`, {
+  const res = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
