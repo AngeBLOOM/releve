@@ -47,9 +47,24 @@ export class SocialPublisherService {
     }
   }
 
+  /**
+   * Facebook exige un token de PÁGINA para publicar. Si tenemos un token de
+   * usuario del sistema (con pages_show_list), pedimos el token de la página.
+   */
+  private async getPageToken(pageId: string, token: string): Promise<string> {
+    try {
+      const res = await axios.get(`${GRAPH}/${pageId}`, {
+        params: { fields: 'access_token', access_token: token },
+      });
+      return res.data?.access_token || token;
+    } catch {
+      return token;
+    }
+  }
+
   private async publishFacebook(input: PublishInput): Promise<PublishResult> {
     const pageId = process.env.FACEBOOK_PAGE_ID!;
-    const token = process.env.MESSENGER_PAGE_ACCESS_TOKEN!;
+    const token = await this.getPageToken(pageId, process.env.MESSENGER_PAGE_ACCESS_TOKEN!);
     const message = input.linkUrl ? `${input.caption}\n\n${input.linkUrl}` : input.caption;
 
     if (input.imageUrl) {
