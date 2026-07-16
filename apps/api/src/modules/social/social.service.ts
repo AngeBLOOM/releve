@@ -23,9 +23,9 @@ const ROTATION_KEY = 'social:autopilot:rotation';
 
 const DEFAULT_CONFIG: AutopilotConfig = {
   enabled: false,
-  postsPerDay: 3,
+  postsPerDay: 5,
   postsPerHour: 2,
-  platforms: ['FACEBOOK', 'INSTAGRAM'],
+  platforms: ['FACEBOOK'],
   hourStart: 8,
   hourEnd: 21,
   captionTemplates: [
@@ -232,13 +232,19 @@ export class SocialService {
     const price = product.pricingRules.length
       ? Math.min(...product.pricingRules.map((r) => Number(r.unitPrice))).toFixed(2)
       : '—';
-    const link = `${process.env.WEB_URL ?? 'http://localhost:3000'}/tienda/${product.id}`;
+    const web = process.env.WEB_URL ?? 'https://releve-tienda.vercel.app';
+    const link = `${web}/tienda/${product.id}`;
     const template = templates[Math.floor(Math.random() * templates.length)] ?? templates[0];
     const caption = template.replace(/{product}/g, product.name).replace(/{price}/g, price).replace(/{link}/g, link);
 
+    // Facebook/Instagram necesitan una URL pública absoluta para la imagen
+    const imageUrl = product.imageUrl
+      ? (product.imageUrl.startsWith('http') ? product.imageUrl : `${web}${product.imageUrl}`)
+      : null;
+
     return {
       caption,
-      imageUrl: product.imageUrl ?? null,
+      imageUrl,
       linkUrl: link,
       baseProductId: product.id,
     };
