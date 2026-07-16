@@ -38,7 +38,7 @@ const DARK_COLORS = ['Negro', 'Azul Oscuro', 'Rojo Vino'];
 function shirtVariants(prefix: string, opts?: { colors?: boolean; costPrice?: number }): VariantSeed[] {
   const cost = opts?.costPrice ?? 4.5;
   const colors = opts?.colors
-    ? [...LIGHT_COLORS.map((c) => ({ color: c, mod: 0 })), ...DARK_COLORS.map((c) => ({ color: c, mod: 3 }))]
+    ? [...LIGHT_COLORS.map((c) => ({ color: c, mod: 0 })), ...DARK_COLORS.map((c) => ({ color: c, mod: 4 }))]
     : [{ color: 'Blanco', mod: 0 }];
   const out: VariantSeed[] = [];
   for (const c of colors) {
@@ -146,7 +146,7 @@ const coreProducts: ProductSeed[] = [
     description: 'Dos franelas a juego para parejas, sublimación frente y espalda tamaño carta. ¡El más pedido! 💜',
     imageUrl: '/products/combo-duo.png',
     variants: [{ sku: 'DUO-STD', label: 'Combo 2 franelas', size: 'Combo', color: 'A elección', costPrice: 9 }],
-    pricing: [{ type: 'FULL_FRONT_BACK', min: 1, max: null, price: 13.0 }], // (REVISAR)
+    pricing: [{ type: 'FULL_FRONT_BACK', min: 1, max: null, price: 18.0 }],
   },
   {
     id: 'prod-taza-11oz',
@@ -167,7 +167,7 @@ const coreProducts: ProductSeed[] = [
     description: 'Gorra con panel frontal sublimable. Ideal para logos y diseños.',
     imageUrl: '/products/gorra.png',
     variants: [{ sku: 'GO-STD', label: 'Gorra ajustable', size: 'Única', color: 'Blanco/Color', costPrice: 4 }],
-    pricing: [{ type: 'LOGO_SMALL', min: 1, max: null, price: 8.0 }], // (REVISAR)
+    pricing: [{ type: 'LOGO_SMALL', min: 1, max: null, price: 11.0 }],
   },
   {
     id: 'prod-sueter',
