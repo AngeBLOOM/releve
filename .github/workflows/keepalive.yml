@@ -1,0 +1,18 @@
+name: Mantener el servidor despierto
+
+# Hace ping al servidor de Render cada ~10 min para que el plan gratis no se duerma,
+# así el bot y la tienda responden al instante. Gratis (GitHub Actions en repo público).
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health
+        run: |
+          echo "Ping $(date -u)"
+          curl -s -m 30 https://releve-api-6abw.onrender.com/health || true
