@@ -26,11 +26,9 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
               <a href={process.env.NEXT_PUBLIC_FACEBOOK_URL ?? 'https://www.facebook.com/1135433832997220'}
                 target="_blank" rel="noopener noreferrer" aria-label="Facebook"
                 className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-lg transition-colors">📘</a>
-              {process.env.NEXT_PUBLIC_INSTAGRAM_URL && (
-                <a href={process.env.NEXT_PUBLIC_INSTAGRAM_URL}
-                  target="_blank" rel="noopener noreferrer" aria-label="Instagram"
-                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-lg transition-colors">📸</a>
-              )}
+              <a href={process.env.NEXT_PUBLIC_INSTAGRAM_URL ?? 'https://instagram.com/releve01'}
+                target="_blank" rel="noopener noreferrer" aria-label="Instagram"
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-lg transition-colors">📸</a>
             </div>
             <div>Relevé · Sublimación personalizada · Hecho con 💜</div>
           </div>

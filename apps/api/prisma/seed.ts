@@ -125,6 +125,65 @@ const uniforms: ProductSeed[] = (
   pricing: [{ type: 'FULL_FRONT_BACK' as SublimationType, min: 1, max: null, price }], // (REVISAR)
 }));
 
+// Tazas con diseño listo (agregadas 2026-07-17). Blancas $5, oscuras $8.
+const designMugs: ProductSeed[] = (
+  [
+    ['taza-suena-sin-limites', 'Taza "Sueña sin límites"', 'taza-suena-sin-limites.png', 'dark'],
+    ['taza-skater', 'Taza Niño Skater', 'taza-skater.png', 'dark'],
+    ['taza-mejor-version', 'Taza "Tu mejor versión"', 'taza-mejor-version.png', 'dark'],
+    ['taza-asi-soy', 'Taza "No es arrechera, así soy"', 'taza-asi-soy.png', 'white'],
+    ['taza-palante-paalla', "Taza \"Pa'lante es pa'allá\"", 'taza-palante-paalla.png', 'white'],
+    ['taza-dios-respalda', 'Taza "Dios me respalda"', 'taza-dios-respalda.png', 'white'],
+    ['taza-mas-vale-palante', "Taza \"Más vale pa'lante\"", 'taza-mas-vale-palante.png', 'white'],
+  ] as Array<[string, string, string, 'dark' | 'white']>
+).map(([slug, name, img, kind]) => ({
+  id: `prod-${slug}`,
+  name,
+  category: 'MUG' as ProductCategory,
+  description:
+    kind === 'dark'
+      ? 'Taza cerámica oscura 11oz (sublimación mágica) de alta calidad. Diseño listo.'
+      : 'Taza cerámica blanca 11oz apta para sublimación de alta calidad. Diseño listo.',
+  imageUrl: `/products/${img}`,
+  variants: [
+    {
+      sku: `${slug.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 11)}-11`,
+      label: kind === 'dark' ? 'Taza 11oz Oscura' : 'Taza 11oz Blanca',
+      size: '11oz',
+      color: kind === 'dark' ? 'Oscura' : 'Blanco',
+      costPrice: kind === 'dark' ? 3.5 : 2.5,
+    },
+  ],
+  pricing: [{ type: 'A4' as SublimationType, min: 1, max: null, price: kind === 'dark' ? 8.0 : 5.0 }],
+}));
+
+// Franela full sublimación manga corta (diseño listo, agregada 2026-07-17).
+// Dama S-L $14, Dama XL $15, Caballero $16. Con 7+ franelas, $1 menos c/u.
+const readyShirts: ProductSeed[] = [
+  {
+    id: 'prod-franela-palante',
+    name: 'Franela "Pa\'lante" Full Sublimación',
+    category: 'SHIRT',
+    description:
+      'Franela full sublimación manga corta 100% poliéster con diseño "¡Pa\'lante es pa\'allá!". Damas y caballeros. Con 6+ franelas, $1 menos cada una.',
+    imageUrl: '/products/franela-palante.png',
+    variants: [
+      { sku: 'FPAL-D-S', label: 'Dama S', size: 'S', color: 'Dama', costPrice: 6 },
+      { sku: 'FPAL-D-M', label: 'Dama M', size: 'M', color: 'Dama', costPrice: 6 },
+      { sku: 'FPAL-D-L', label: 'Dama L', size: 'L', color: 'Dama', costPrice: 6 },
+      { sku: 'FPAL-D-XL', label: 'Dama XL', size: 'XL', color: 'Dama', costPrice: 6, priceModifier: 1 },
+      { sku: 'FPAL-C-S', label: 'Caballero S', size: 'S', color: 'Caballero', costPrice: 6, priceModifier: 2 },
+      { sku: 'FPAL-C-M', label: 'Caballero M', size: 'M', color: 'Caballero', costPrice: 6, priceModifier: 2 },
+      { sku: 'FPAL-C-L', label: 'Caballero L', size: 'L', color: 'Caballero', costPrice: 6, priceModifier: 2 },
+      { sku: 'FPAL-C-XL', label: 'Caballero XL', size: 'XL', color: 'Caballero', costPrice: 6, priceModifier: 2 },
+    ],
+    pricing: [
+      { type: 'FULL_FRONT_BACK', min: 1, max: 6, price: 14.0 },
+      { type: 'FULL_FRONT_BACK', min: 7, max: null, price: 13.0 },
+    ],
+  },
+];
+
 const coreProducts: ProductSeed[] = [
   {
     id: 'prod-franela-personalizada',
@@ -196,7 +255,7 @@ const coreProducts: ProductSeed[] = [
   },
 ];
 
-const ALL_PRODUCTS: ProductSeed[] = [...coreProducts, ...designShirts, ...collections, ...uniforms];
+const ALL_PRODUCTS: ProductSeed[] = [...coreProducts, ...designShirts, ...collections, ...uniforms, ...designMugs, ...readyShirts];
 
 async function main() {
   console.log('Ejecutando seed de Relevé...');
