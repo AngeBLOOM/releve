@@ -9,10 +9,13 @@ export class MainMenuFlow {
   async handle(ctx: BotContext): Promise<BotReply> {
     await this.session.clear(ctx.conversationId);
 
+    const store = process.env.STORE_PUBLIC_URL ?? 'https://releve-tienda.vercel.app';
+    const storeLine = `\n\n🛍️ Mira todo el catálogo y arma tu diseño aquí:\n${store}/tienda`;
+
     if (ctx.channel === 'whatsapp') {
       return {
         type: 'INTERACTIVE',
-        text: '¡Hola! 👋 Bienvenido/a a *Relevé* 💜🎈\n\n¿En qué puedo ayudarte hoy?',
+        text: `¡Hola! 👋 Bienvenido/a a *Relevé* 💜🎈${storeLine}\n\n¿En qué puedo ayudarte hoy?`,
         buttons: [
           { id: 'QUOTE',        title: '💰 Cotizar pedido' },
           { id: 'ORDER_STATUS', title: '📦 Estado de pedido' },
@@ -24,8 +27,9 @@ export class MainMenuFlow {
     return {
       type: 'TEXT',
       text:
-        '¡Hola! 👋 Bienvenido/a a *Relevé* 💜🎈\n\n' +
-        'Elige una opción:\n\n' +
+        '¡Hola! 👋 Bienvenido/a a *Relevé* 💜🎈' +
+        storeLine +
+        '\n\nElige una opción:\n\n' +
         '1️⃣ Ver catálogo\n' +
         '2️⃣ Cotizar pedido personalizado\n' +
         '3️⃣ Estado de mi pedido\n' +
