@@ -25,7 +25,7 @@ const DEFAULT_CONFIG: AutopilotConfig = {
   enabled: false,
   postsPerDay: 5,
   postsPerHour: 2,
-  platforms: ['FACEBOOK'],
+  platforms: ['FACEBOOK', 'INSTAGRAM'],
   hourStart: 8,
   hourEnd: 21,
   captionTemplates: [
