@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Check, Loader2, Upload } from 'lucide-react';
 import { useCart, CATEGORY_LABEL, SUBLIM_LABEL } from '@/store/cart.store';
+import { uploadDesignFile } from '@/lib/upload';
 
 interface Variant { id: string; label: string; size: string | null; color: string | null; stockItems: { quantity: number }[] }
 interface PricingRule { sublimationType: string; minQuantity: number; maxQuantity: number | null; unitPrice: string }
@@ -42,16 +43,10 @@ export default function ProductCustomizer({ id }: { id: string }) {
     setUploading(true);
     setAdded(false);
     try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const res = await fetch('/api/shop/upload', { method: 'POST', body: fd });
-      if (res.ok) {
-        const d = await res.json();
-        setDesign({ url: d.url, name: d.fileName, mime: d.mimeType });
-      } else {
-        const e = await res.json().catch(() => ({}));
-        alert(e.message ?? 'No se pudo subir el archivo');
-      }
+      const d = await uploadDesignFile(file);
+      setDesign({ url: d.url, name: d.name, mime: d.mime });
+    } catch (e: any) {
+      alert(e.message ?? 'No se pudo subir el archivo');
     } finally {
       setUploading(false);
     }

@@ -2,6 +2,7 @@
 import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Upload, RotateCcw } from 'lucide-react';
+import { uploadDesignFile } from '@/lib/upload';
 
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? '584120846332';
 
@@ -58,6 +59,8 @@ export default function DesignSimulator() {
   const [collarColor, setCollarColor] = useState('#ffffff'); // cuello
   const [cuffColor, setCuffColor] = useState('#ffffff'); // borde de manga
   const [design, setDesign] = useState<string | null>(null);
+  const [designUrl, setDesignUrl] = useState<string | null>(null); // URL permanente para que le llegue al negocio
+  const [uploadingDesign, setUploadingDesign] = useState(false);
   const [size, setSize] = useState(38); // % del área de estampado
   const [posX, setPosX] = useState(50); // %
   const [posY, setPosY] = useState(42); // %
@@ -69,6 +72,13 @@ export default function DesignSimulator() {
     const reader = new FileReader();
     reader.onload = () => setDesign(reader.result as string);
     reader.readAsDataURL(f);
+    // Subir a un lugar permanente para poder enviárselo al negocio por WhatsApp
+    setUploadingDesign(true);
+    setDesignUrl(null);
+    uploadDesignFile(f)
+      .then((d) => setDesignUrl(d.url))
+      .catch(() => {})
+      .finally(() => setUploadingDesign(false));
   }
 
   // Arrastrar para mover / esquina para redimensionar
@@ -323,12 +333,18 @@ export default function DesignSimulator() {
         <div className="flex flex-col gap-2">
           {WHATSAPP && (
             <a
-              href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent('¡Hola Relevé! 💜 Acabo de probar un diseño en el simulador y quiero pedirlo. Te envío mi diseño.')}`}
+              href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(
+                '¡Hola Relevé! 💜 Acabo de probar un diseño en el simulador y quiero pedirlo.' +
+                (designUrl ? `\n\n🎨 Mi diseño: ${designUrl}` : ' Te envío mi diseño.')
+              )}`}
               target="_blank" rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-medium py-2.5 rounded-lg transition-colors"
             >
-              Pedir este diseño por WhatsApp
+              {uploadingDesign ? 'Preparando tu diseño…' : 'Pedir este diseño por WhatsApp'}
             </a>
+          )}
+          {design && !designUrl && !uploadingDesign && (
+            <p className="text-[11px] text-amber-600 text-center">Si al pedir no se adjunta el diseño, envíanoslo tú en el chat 💜</p>
           )}
           <Link href="/tienda" className="text-center text-teal-600 text-sm font-medium hover:underline">Ver productos de la tienda →</Link>
         </div>
