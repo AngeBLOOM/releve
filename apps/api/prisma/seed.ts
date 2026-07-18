@@ -177,10 +177,24 @@ const readyShirts: ProductSeed[] = [
       { sku: 'FPAL-C-L', label: 'Caballero L', size: 'L', color: 'Caballero', costPrice: 6, priceModifier: 2 },
       { sku: 'FPAL-C-XL', label: 'Caballero XL', size: 'XL', color: 'Caballero', costPrice: 6, priceModifier: 2 },
     ],
-    pricing: [
-      { type: 'FULL_FRONT_BACK', min: 1, max: 6, price: 14.0 },
-      { type: 'FULL_FRONT_BACK', min: 7, max: null, price: 13.0 },
-    ],
+    pricing: [{ type: 'FULL_FRONT_BACK', min: 1, max: null, price: 15.0 }],
+  },
+  {
+    id: 'prod-franela-manga-larga',
+    name: 'Franela Manga Larga Full Sublimación',
+    category: 'SHIRT',
+    description:
+      'Franela manga larga full sublimación 100% poliéster. Diseño de ejemplo, totalmente personalizable con tu diseño, colores y nombre. Hasta talla L $16.',
+    imageUrl: '/products/franela-manga-larga.png',
+    variants: SIZES.map((s) => ({
+      sku: `FMLARGA-${s.size}`,
+      label: `Talla ${s.size}`,
+      size: s.size,
+      color: 'Full color',
+      costPrice: 8,
+      priceModifier: s.mod,
+    })),
+    pricing: [{ type: 'FULL_FRONT_BACK', min: 1, max: null, price: 16.0 }],
   },
 ];
 
