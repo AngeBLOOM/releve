@@ -81,6 +81,24 @@ export default function DesignSimulator() {
       .finally(() => setUploadingDesign(false));
   }
 
+  // Avisar al panel de la administradora (aunque no completen el pedido en WhatsApp)
+  const [sentToPanel, setSentToPanel] = useState(false);
+  function sendToPanel() {
+    if (!designUrl || sentToPanel) return;
+    setSentToPanel(true);
+    const label: Record<string, string> = { SHIRT: 'Franela', LONGSLEEVE: 'Franela manga larga', MUG: 'Taza' };
+    fetch('/api/design-submissions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source: 'simulador',
+        designUrl,
+        garment: label[garment] ?? garment,
+        colors: `Cuerpo ${color}, mangas ${sleeveColor}, cuello ${collarColor}`,
+      }),
+    }).catch(() => {});
+  }
+
   // Arrastrar para mover / esquina para redimensionar
   useEffect(() => {
     function onMove(e: PointerEvent) {
@@ -333,6 +351,7 @@ export default function DesignSimulator() {
         <div className="flex flex-col gap-2">
           {WHATSAPP && (
             <a
+              onClick={sendToPanel}
               href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(
                 '¡Hola Relevé! 💜 Acabo de probar un diseño en el simulador y quiero pedirlo.' +
                 (designUrl ? `\n\n🎨 Mi diseño: ${designUrl}` : ' Te envío mi diseño.')

@@ -252,6 +252,23 @@ model Agent {
   createdAt DateTime  @default(now())
 }
 
+// Diseños que el cliente prueba/sube en la tienda (simulador o producto).
+// Llegan al panel de la administradora aunque no completen el pedido.
+model DesignSubmission {
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  source       String   // 'simulador' | 'producto'
+  designUrl    String
+  garment      String?  // tipo de prenda o descripción
+  colors       String?  // colores elegidos (texto)
+  note         String?  @db.Text
+  customerName String?
+  phone        String?
+  status       String   @default("NUEVO") // NUEVO | VISTO | ATENDIDO
+
+  @@index([status, createdAt])
+}
+
 enum Channel {
   WHATSAPP
   INSTAGRAM

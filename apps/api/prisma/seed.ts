@@ -265,7 +265,7 @@ const coreProducts: ProductSeed[] = [
       costPrice: 14,
       priceModifier: s.mod,
     })),
-    pricing: [{ type: 'FULL_FRONT_BACK', min: 1, max: null, price: 30.0 }], // (REVISAR)
+    pricing: [{ type: 'FULL_FRONT_BACK', min: 1, max: null, price: 25.0 }], // Uniforme camiseta y short $25
   },
 ];
 

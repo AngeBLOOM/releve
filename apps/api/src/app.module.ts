@@ -15,6 +15,7 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { ShopModule } from './modules/shop/shop.module';
 import { SocialModule } from './modules/social/social.module';
+import { DesignSubmissionsModule } from './modules/design-submissions/design-submissions.module';
 import { HealthController } from './health.controller';
 
 // Config de Redis: en producción (Render) basta con REDIS_URL; en local se usan
@@ -69,6 +70,7 @@ function redisUrl() {
     IntegrationsModule,
     ShopModule,
     SocialModule,
+    DesignSubmissionsModule,
   ],
   controllers: [HealthController],
 })

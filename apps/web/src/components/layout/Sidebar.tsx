@@ -1,13 +1,14 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageSquare, ShoppingBag, Package, LayoutGrid, Users, BarChart2, Plug, Megaphone } from 'lucide-react';
+import { MessageSquare, ShoppingBag, Package, LayoutGrid, Users, BarChart2, Plug, Megaphone, Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import BrandLogo from '@/components/BrandLogo';
 
 const NAV_ITEMS = [
   { href: '/inbox',        label: 'Bandeja',       icon: MessageSquare },
   { href: '/orders',       label: 'Pedidos',        icon: ShoppingBag },
+  { href: '/disenos',      label: 'Diseños',        icon: Palette },
   { href: '/catalog',      label: 'Catálogo',       icon: LayoutGrid },
   { href: '/inventory',    label: 'Inventario',     icon: Package },
   { href: '/customers',    label: 'Clientes',       icon: Users },
