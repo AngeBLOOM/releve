@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { DesignSubmissionsService } from './design-submissions.service';
 
@@ -29,5 +29,12 @@ export class DesignSubmissionsController {
   @UseGuards(JwtAuthGuard)
   updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
     return this.svc.updateStatus(id, body.status);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id') id: string) {
+    return this.svc.remove(id);
   }
 }

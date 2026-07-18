@@ -35,4 +35,8 @@ export class DesignSubmissionsService {
   updateStatus(id: string, status: string) {
     return this.prisma.designSubmission.update({ where: { id }, data: { status } });
   }
+
+  remove(id: string) {
+    return this.prisma.designSubmission.delete({ where: { id } });
+  }
 }

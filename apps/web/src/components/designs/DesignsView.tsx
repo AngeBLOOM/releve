@@ -42,6 +42,12 @@ export default function DesignsView() {
     }).catch(() => {});
   }
 
+  async function remove(id: string) {
+    if (!confirm('¿Borrar este diseño?')) return;
+    setItems((prev) => prev.filter((i) => i.id !== id));
+    await fetch(`/api/design-submissions/${id}`, { method: 'DELETE' }).catch(() => {});
+  }
+
   if (loading) return <p className="text-sm text-gray-400">Cargando diseños…</p>;
   if (!items.length)
     return (
@@ -63,7 +69,10 @@ export default function DesignsView() {
             <div className="p-3 space-y-2 flex-1 flex flex-col">
               <div className="flex items-center justify-between">
                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${st.cls}`}>{st.label}</span>
-                <span className="text-xs text-gray-400">{format(new Date(it.createdAt), "d MMM HH:mm", { locale: es })}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400">{format(new Date(it.createdAt), "d MMM HH:mm", { locale: es })}</span>
+                  <button onClick={() => remove(it.id)} title="Borrar" className="text-gray-300 hover:text-red-500 text-xs">✕</button>
+                </div>
               </div>
               <p className="text-sm font-medium text-gray-800">{it.garment ?? 'Diseño'} · <span className="text-gray-400 font-normal">{it.source}</span></p>
               {it.colors && <p className="text-xs text-gray-500">{it.colors}</p>}
