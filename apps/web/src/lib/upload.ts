@@ -12,8 +12,9 @@ export interface UploadedDesign {
   mime: string;
 }
 
-const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-const PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_PRESET;
+// Cuenta Cloudinary de Relevé (valores públicos, no secretos).
+const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? 'cfftkxvz';
+const PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_PRESET ?? 'releve_designs';
 
 export function cloudinaryEnabled(): boolean {
   return !!CLOUD && !!PRESET;
