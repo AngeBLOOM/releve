@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Pencil, Check, X } from 'lucide-react';
 
 const SUBLIM_LABELS: Record<string, string> = { LOGO_SMALL: 'Logo pequeño', HALF_FRONT: 'Media frente', FULL_FRONT: 'Frente completa', FULL_FRONT_BACK: 'Frente + dorso', A4: 'Taza A4', A3: 'Tamaño A3' };
 interface Rule { id: string; sublimationType: string; minQuantity: number; maxQuantity: number | null; unitPrice: string; }
@@ -11,6 +11,8 @@ export default function PricingRulesPanel({ productId, rules, onUpdate }: Props)
   const [adding, setAdding] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editPrice, setEditPrice] = useState('');
 
   async function saveRule() {
     if (!form.unitPrice) return;
@@ -22,6 +24,19 @@ export default function PricingRulesPanel({ productId, rules, onUpdate }: Props)
   async function deleteRule(ruleId: string) {
     if (!confirm('¿Eliminar esta regla?')) return;
     await fetch(`/api/catalog/pricing/${ruleId}`, { method: 'DELETE' }); onUpdate();
+  }
+
+  // Editar el precio directamente en la tabla
+  async function savePrice(ruleId: string) {
+    const value = parseFloat(editPrice);
+    if (isNaN(value) || value < 0) return;
+    setSaving(true);
+    await fetch(`/api/catalog/pricing/${ruleId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ unitPrice: value }),
+    });
+    setSaving(false); setEditingId(null); onUpdate();
   }
 
   return (
@@ -40,7 +55,33 @@ export default function PricingRulesPanel({ productId, rules, onUpdate }: Props)
                   <td className="px-3 py-2 text-gray-700 font-medium">{SUBLIM_LABELS[rule.sublimationType] ?? rule.sublimationType}</td>
                   <td className="px-3 py-2 text-gray-600">{rule.minQuantity}</td>
                   <td className="px-3 py-2 text-gray-600">{rule.maxQuantity ?? '∞'}</td>
-                  <td className="px-3 py-2 text-right font-bold text-gray-900">${parseFloat(rule.unitPrice).toFixed(2)}</td>
+                  <td className="px-3 py-2 text-right">
+                    {editingId === rule.id ? (
+                      <div className="flex items-center justify-end gap-1">
+                        <span className="text-gray-500">$</span>
+                        <input
+                          type="number" step="0.01" min="0" autoFocus
+                          value={editPrice}
+                          onChange={e => setEditPrice(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') savePrice(rule.id); if (e.key === 'Escape') setEditingId(null); }}
+                          className="w-20 text-xs text-right border border-teal-300 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-teal-400"
+                        />
+                        <button onClick={() => savePrice(rule.id)} disabled={saving} title="Guardar"
+                          className="text-green-600 hover:text-green-700 disabled:opacity-40 p-1"><Check size={14} /></button>
+                        <button onClick={() => setEditingId(null)} title="Cancelar"
+                          className="text-gray-400 hover:text-gray-600 p-1"><X size={14} /></button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => { setEditingId(rule.id); setEditPrice(parseFloat(rule.unitPrice).toFixed(2)); }}
+                        title="Clic para cambiar el precio"
+                        className="group inline-flex items-center gap-1.5 font-bold text-gray-900 hover:text-teal-700"
+                      >
+                        ${parseFloat(rule.unitPrice).toFixed(2)}
+                        <Pencil size={12} className="text-gray-300 group-hover:text-teal-600" />
+                      </button>
+                    )}
+                  </td>
                   <td className="px-3 py-2 text-right"><button onClick={() => deleteRule(rule.id)} className="text-red-400 hover:text-red-600"><Trash2 size={13} /></button></td>
                 </tr>
               ))}

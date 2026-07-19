@@ -62,6 +62,16 @@ export class CatalogService {
     return this.prisma.pricingRule.create({ data: { ...dto, baseProductId } });
   }
 
+  /** Edita una regla existente (para cambiar el precio desde el panel). */
+  updatePricingRule(ruleId: string, dto: any) {
+    const data: any = {};
+    if (dto.unitPrice !== undefined) data.unitPrice = dto.unitPrice;
+    if (dto.minQuantity !== undefined) data.minQuantity = dto.minQuantity;
+    if (dto.maxQuantity !== undefined) data.maxQuantity = dto.maxQuantity;
+    if (dto.sublimationType !== undefined) data.sublimationType = dto.sublimationType;
+    return this.prisma.pricingRule.update({ where: { id: ruleId }, data });
+  }
+
   deletePricingRule(ruleId: string) {
     return this.prisma.pricingRule.delete({ where: { id: ruleId } });
   }

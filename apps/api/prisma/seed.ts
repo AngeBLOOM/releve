@@ -282,15 +282,19 @@ async function main() {
   });
   console.log('✅ Agente admin listo (admin@sublicolor.com / admin1234)');
 
-  // Reglas de precio: se regeneran en cada seed (config derivada, sin datos de pedidos)
-  await prisma.pricingRule.deleteMany({});
+  // IMPORTANTE: el seed corre en CADA despliegue (ver startCommand en render.yaml).
+  // Por eso NO debe pisar lo que la dueña edite desde el panel de administración:
+  //   - Los productos que ya existen no se tocan (update vacío).
+  //   - Los precios sólo se crean si el producto todavía no tiene ninguno.
+  // Así el panel es la fuente de verdad y los cambios manuales nunca se pierden.
 
   let nProd = 0;
   let nRule = 0;
+  let nSkipped = 0;
   for (const p of ALL_PRODUCTS) {
     await prisma.baseProduct.upsert({
       where: { id: p.id },
-      update: { name: p.name, category: p.category, description: p.description, imageUrl: p.imageUrl },
+      update: {}, // no sobrescribir: respeta nombre/descripción/imagen editados en el panel
       create: {
         id: p.id,
         name: p.name,
@@ -300,24 +304,30 @@ async function main() {
         variants: { create: p.variants.map((v) => ({ ...v, priceModifier: v.priceModifier ?? 0 })) },
       },
     });
-    for (const r of p.pricing) {
-      await prisma.pricingRule.create({
-        data: {
-          baseProductId: p.id,
-          sublimationType: r.type,
-          minQuantity: r.min,
-          maxQuantity: r.max,
-          unitPrice: r.price,
-        },
-      });
-      nRule++;
+
+    const yaTienePrecios = await prisma.pricingRule.count({ where: { baseProductId: p.id } });
+    if (yaTienePrecios === 0) {
+      for (const r of p.pricing) {
+        await prisma.pricingRule.create({
+          data: {
+            baseProductId: p.id,
+            sublimationType: r.type,
+            minQuantity: r.min,
+            maxQuantity: r.max,
+            unitPrice: r.price,
+          },
+        });
+        nRule++;
+      }
+    } else {
+      nSkipped++;
     }
     nProd++;
   }
 
-  console.log(`✅ ${nProd} productos y ${nRule} reglas de precio cargadas`);
+  console.log(`✅ ${nProd} productos revisados · ${nRule} reglas de precio creadas · ${nSkipped} con precios ya definidos (respetados)`);
   console.log('\n🎉 Seed de Relevé completado');
-  console.log('   ⚠️  Revisa en el panel los precios (REVISAR): combos, gorra, suéter y uniformes.');
+  console.log('   💡 Los precios se editan desde el panel (Catálogo). El seed ya no los pisa.');
 }
 
 main()

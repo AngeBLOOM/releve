@@ -28,6 +28,9 @@ export class CatalogController {
   @Post('products/:id/pricing')
   addPricing(@Param('id') productId: string, @Body() dto: any) { return this.catalog.createPricingRule(productId, dto); }
 
+  @Put('pricing/:ruleId')
+  updatePricing(@Param('ruleId') ruleId: string, @Body() dto: any) { return this.catalog.updatePricingRule(ruleId, dto); }
+
   @Delete('pricing/:ruleId')
   @HttpCode(HttpStatus.NO_CONTENT)
   deletePricing(@Param('ruleId') ruleId: string) { return this.catalog.deletePricingRule(ruleId); }
