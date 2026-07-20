@@ -216,10 +216,13 @@ const coreProducts: ProductSeed[] = [
     id: 'prod-combo-duo',
     name: 'Combo Dúo (Parejas)',
     category: 'SHIRT',
-    description: 'Dos franelas a juego para parejas, sublimación frente y espalda tamaño carta. ¡El más pedido! 💜',
+    description: 'Dos franelas a juego para parejas, sublimación frente y espalda tamaño carta. Claras $13 · Oscuras $18. ¡El más pedido! 💜',
     imageUrl: '/products/combo-duo.png',
-    variants: [{ sku: 'DUO-STD', label: 'Combo 2 franelas', size: 'Combo', color: 'A elección', costPrice: 9 }],
-    pricing: [{ type: 'FULL_FRONT_BACK', min: 1, max: null, price: 18.0 }],
+    variants: [
+      { sku: 'DUO-CLARA', label: 'Combo Dúo Claras (2 franelas)', size: 'Combo', color: 'Clara', costPrice: 7, priceModifier: 0 },
+      { sku: 'DUO-OSCURA', label: 'Combo Dúo Oscuras (2 franelas)', size: 'Combo', color: 'Oscura', costPrice: 9, priceModifier: 5 },
+    ],
+    pricing: [{ type: 'FULL_FRONT_BACK', min: 1, max: null, price: 13.0 }], // clara $13, oscura $13+$5=$18
   },
   {
     id: 'prod-taza-11oz',
