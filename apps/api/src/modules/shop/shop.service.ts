@@ -151,4 +151,39 @@ export class ShopService {
 
     return { orderNumber: order.orderNumber, total: order.total };
   }
+
+  /**
+   * Seguimiento público de un pedido por su número.
+   * Devuelve SOLO lo necesario para que el cliente vea en qué paso va:
+   * nada de teléfono, dirección ni datos personales.
+   */
+  async trackOrder(orderNumber: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { orderNumber: orderNumber.trim() },
+      select: {
+        orderNumber: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        deliveryType: true,
+        total: true,
+        items: {
+          select: {
+            quantity: true,
+            variant: {
+              select: { label: true, baseProduct: { select: { name: true, imageUrl: true } } },
+            },
+          },
+        },
+        statusHistory: {
+          select: { status: true, createdAt: true },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+    });
+    if (!order) {
+      throw new NotFoundException('No encontramos ese pedido. Revisa el número e intenta de nuevo.');
+    }
+    return order;
+  }
 }

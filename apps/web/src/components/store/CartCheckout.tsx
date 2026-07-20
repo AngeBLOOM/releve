@@ -100,6 +100,13 @@ export default function CartCheckout() {
             Enviar diseño por WhatsApp
           </a>
         )}
+        <div className="bg-teal-50 border border-teal-100 rounded-xl p-4 text-sm">
+          <p className="font-medium text-teal-800 mb-1">📦 Sigue tu pedido en cualquier momento</p>
+          <Link href={`/pedido/${done.orderNumber}`} className="text-teal-700 underline break-all font-medium">
+            Ver el estado de mi pedido
+          </Link>
+          <p className="text-xs text-teal-700/70 mt-1">Guarda tu número: <b>{done.orderNumber}</b></p>
+        </div>
         <div>
           <Link href="/tienda" className="text-teal-600 text-sm hover:underline">← Seguir comprando</Link>
         </div>

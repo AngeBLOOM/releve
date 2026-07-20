@@ -30,6 +30,12 @@ export class ShopController {
     return this.shop.createOrder(body);
   }
 
+  /** Seguimiento público: el cliente consulta en qué paso va su pedido. */
+  @Get('orders/:orderNumber')
+  trackOrder(@Param('orderNumber') orderNumber: string) {
+    return this.shop.trackOrder(orderNumber);
+  }
+
   /** Subida del archivo de diseño del cliente. Devuelve la URL pública. */
   @Post('upload')
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }))

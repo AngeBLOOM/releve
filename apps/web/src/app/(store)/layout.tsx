@@ -30,6 +30,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
                 target="_blank" rel="noopener noreferrer" aria-label="Instagram"
                 className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-lg transition-colors">📸</a>
             </div>
+            <a href="/pedido" className="text-teal-200 hover:text-white font-medium underline underline-offset-4">📦 Sigue tu pedido</a>
             <div>Relevé · Sublimación personalizada · Hecho con 💜</div>
           </div>
         </footer>
