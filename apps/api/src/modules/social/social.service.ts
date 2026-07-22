@@ -20,19 +20,35 @@ export interface AutopilotConfig {
 const AUTOPILOT_KEY = 'social:autopilot';
 const LAST_RUN_KEY = 'social:autopilot:lastRun';
 const ROTATION_KEY = 'social:autopilot:rotation';
+const LAST_TEMPLATES_KEY = 'social:autopilot:lastTemplates';
 
+// Ritmo conservador: Facebook bloquea temporalmente las páginas que publican
+// mucho o con textos repetidos. Pocas publicaciones y MUCHAS plantillas
+// distintas para que no parezca un robot.
 const DEFAULT_CONFIG: AutopilotConfig = {
   enabled: false,
-  postsPerDay: 5,
-  postsPerHour: 2,
+  postsPerDay: 2,
+  postsPerHour: 1,
   platforms: ['FACEBOOK', 'INSTAGRAM'],
-  hourStart: 8,
-  hourEnd: 21,
+  hourStart: 9,
+  hourEnd: 20,
   captionTemplates: [
     '✨ {product} personalizado a tu gusto. ¡Sublimación de alta calidad! Desde ${price} 🎨',
-    '🔥 ¿Buscas algo único? {product} desde ${price}. Pídelo ya y diséñalo como quieras.',
     '🎁 {product} ideal para regalar o para tu marca. Desde ${price}. ¡Haz tu pedido!',
     '👕☕ {product} con tu diseño. Calidad Relevé desde ${price}.',
+    'Hoy te traemos {product} 💜 Lo hacemos con el diseño que tú quieras. Desde ${price}.',
+    '¿Ya viste nuestra {product}? Colores vivos que no se despintan. Desde ${price} 🔥',
+    'En Relevé cada pieza se hace a pedido 🧵 {product} desde ${price}. Escríbenos y la diseñamos juntas.',
+    'Un detalle que sí se recuerda 🎁 {product} personalizada desde ${price}.',
+    '{product} 💫 Tú pones la idea, nosotros la sublimamos. Desde ${price}.',
+    'Para tu negocio, tu equipo o ese regalo especial ✨ {product} desde ${price}.',
+    'Calidad que se nota 👌 {product} en sublimación premium. Desde ${price}.',
+    'Nada como algo hecho para ti 💜 {product} desde ${price}. Pídela por WhatsApp.',
+    'Recién salida del taller 🔥 {product}. La personalizamos como quieras, desde ${price}.',
+    '¿Buscas un regalo diferente? 🎀 {product} con el nombre, foto o frase que tú elijas. Desde ${price}.',
+    'Sublimación hecha con amor desde Las Delicias 💜 {product} desde ${price}.',
+    'Tu diseño, nuestra tinta 🎨 {product} desde ${price}. Cuéntanos qué tienes en mente.',
+    'Disponible para pedidos 📦 {product} desde ${price}. Te la entregamos como la imaginaste.',
   ],
 };
 
@@ -234,7 +250,15 @@ export class SocialService {
       : '—';
     const web = process.env.WEB_URL ?? 'https://releve-tienda.vercel.app';
     const link = `${web}/tienda/${product.id}`;
-    const template = templates[Math.floor(Math.random() * templates.length)] ?? templates[0];
+    // Evita repetir las plantillas usadas hace poco: Facebook bloquea las
+    // páginas cuyos textos se parecen demasiado entre sí.
+    const recientes: number[] = JSON.parse((await this.redis.get(LAST_TEMPLATES_KEY)) ?? '[]');
+    const libres = templates.map((_, i) => i).filter((i) => !recientes.includes(i));
+    const pool = libres.length ? libres : templates.map((_, i) => i);
+    const elegido = pool[Math.floor(Math.random() * pool.length)];
+    const template = templates[elegido] ?? templates[0];
+    const memoria = Math.max(1, Math.floor(templates.length / 2));
+    await this.redis.set(LAST_TEMPLATES_KEY, JSON.stringify([elegido, ...recientes].slice(0, memoria)));
     const caption = template.replace(/{product}/g, product.name).replace(/{price}/g, price).replace(/{link}/g, link);
 
     // Facebook/Instagram necesitan una URL pública absoluta para la imagen
